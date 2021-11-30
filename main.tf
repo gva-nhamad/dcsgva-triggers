@@ -9,7 +9,7 @@ resource "google_cloudbuild_trigger" "tst-push-api_supporting_infra_plan" {
   name = "Plan-dcsgva-push-api-tst"
 
   github {
-    owner = "lbg-gcp-custom"
+    owner = "gva-nhamad"
     name = "${var.org_name}-push-api"
     pull_request {
       branch = "^main$"
@@ -28,7 +28,7 @@ resource "google_cloudbuild_trigger" "tst-push-api_supporting_infra_apply" {
   name = "Apply-dcsgva-push-api-tst"
 
   github {
-    owner = "lbg-gcp-custom"
+    owner = "gva-nhamad"
     name = "${var.org_name}-push-api"
     push {
       branch = "main"
