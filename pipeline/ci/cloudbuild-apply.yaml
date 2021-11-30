@@ -1,14 +1,5 @@
 ---
 
-substitutions:
-  _LOCATION: 'europe-west2'
-  _GIT_ORIGIN: 'github.com:lbg-gcp-custom/dcsgva-connects-system.git'
-  _GITHUB_KEYSTORE: dcsgva-secops-prd-github-key
-  _GITHUB_KMS_KEY_PROJECT: dcsgva-secops-prd
-  _GITHUB_KMS_KEY_NAME: dcsgva-secops-prd-hsm-key
-  _GITHUB_KMS_KEY_RING_NAME: dcsgva-secops-prd-keyring
-  _GIT_TAG_VERSION_MAJOR_MINOR: '1.0'
-
 steps:
 
   - name: ubuntu
@@ -32,46 +23,6 @@ steps:
         [ ! -z "${_HEAD_REPO_URL}" ] && echo "Head repo URL: ${_HEAD_REPO_URL}"
         [ ! -z "${_PR_NUMBER}" ]     && echo "PR number:     ${_PR_NUMBER}"
         echo \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*
-
-  # #
-  # # Prepare environment
-  # #
-  # - name: gcr.io/cloud-builders/gsutil
-  #   id: Acquire keys
-  #   args: ['cp', 'gs://${_GITHUB_KEYSTORE}/github_id_rsa.enc', 'github_id_rsa.enc']
-
-  # # Decrypt the file containing the key
-  # - name: 'gcr.io/cloud-builders/gcloud'
-  #   id: Prepare keys
-  #   args:
-  #   - kms
-  #   - decrypt
-  #   - --project=${_GITHUB_KMS_KEY_PROJECT}
-  #   - --ciphertext-file=github_id_rsa.enc
-  #   - --plaintext-file=/root/.ssh/id_rsa
-  #   - --location=${_LOCATION}
-  #   - --keyring=${_GITHUB_KMS_KEY_RING_NAME}
-  #   - --key=${_GITHUB_KMS_KEY_NAME}
-  #   volumes:
-  #   - name: 'ssh'
-  #     path: /root/.ssh
-
-  # # Set up git with key and domain
-  # - name: 'gcr.io/cloud-builders/git'
-  #   entrypoint: 'bash'
-  #   id: Git Clone
-  #   args:
-  #   - '-c'
-  #   - |
-  #     chmod 600 /root/.ssh/id_rsa
-  #     cat <<EOF >/root/.ssh/config
-  #     Hostname github.com
-  #     IdentityFile /root/.ssh/id_rsa
-  #     EOF
-  #     ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts
-  #   volumes:
-  #   - name: 'ssh'
-  #     path: /root/.ssh
 
 #
 # Deploy code
@@ -106,24 +57,24 @@ steps:
       - '/workspace/tfplan'
     dir: ./
 
-  ###################
-  ### Creating Tags
+  # ###################
+  # ### Creating Tags
 
-  - name: 'gcr.io/cloud-builders/git'
-    id: Tag Candidate Release Code
-    entrypoint: 'bash'
-    args:
-    - '-c'
-    - |
-      git remote -v
-      echo "Running git remote set-url origin git@${_GIT_ORIGIN} for tags to be pushed via SSH"
-      git remote set-url origin git@${_GIT_ORIGIN}
-      git remote -v
-      git tag $_GIT_TAG_VERSION_MAJOR_MINOR.$SHORT_SHA
-      git push --tag
-    volumes:
-    - name: 'ssh'
-      path: /root/.ssh
+  # - name: 'gcr.io/cloud-builders/git'
+  #   id: Tag Candidate Release Code
+  #   entrypoint: 'bash'
+  #   args:
+  #   - '-c'
+  #   - |
+  #     git remote -v
+  #     echo "Running git remote set-url origin git@${_GIT_ORIGIN} for tags to be pushed via SSH"
+  #     git remote set-url origin git@${_GIT_ORIGIN}
+  #     git remote -v
+  #     git tag $_GIT_TAG_VERSION_MAJOR_MINOR.$SHORT_SHA
+  #     git push --tag
+  #   volumes:
+  #   - name: 'ssh'
+  #     path: /root/.ssh
 
 # Environment variables
 options:
