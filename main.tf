@@ -10,7 +10,7 @@ resource "google_cloudbuild_trigger" "tst-push-api_supporting_infra_plan" {
 
   github {
     owner = "gva-nhamad"
-    name = "${var.org_name}-push-api"
+    name = "${var.org_name}-triggers"
     pull_request {
       branch = "^main$"
     }
@@ -29,7 +29,7 @@ resource "google_cloudbuild_trigger" "tst-push-api_supporting_infra_apply" {
 
   github {
     owner = "gva-nhamad"
-    name = "${var.org_name}-push-api"
+    name = "${var.org_name}-triggers"
     push {
       branch = "main"
     }
