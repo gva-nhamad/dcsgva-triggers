@@ -45,7 +45,6 @@ steps:
     id: Terraform plan
     args:
       - 'plan'
-      - '-var-file=tfvars/${PROJECT_ID}.tfvars'
       - '-out=/workspace/tfplan'
     dir: ./
 
@@ -57,23 +56,7 @@ steps:
       - '/workspace/tfplan'
     dir: ./
 
-  # ###################
-  # ### Creating Tags
 
-  # - name: 'gcr.io/cloud-builders/git'
-  #   id: Tag Candidate Release Code
-  #   entrypoint: 'bash'
-  #   args:
-  #   - '-c'
-  #   - |
-  #     git remote -v
-  #     echo "Running git remote set-url origin git@${_GIT_ORIGIN} for tags to be pushed via SSH"
-  #     git remote set-url origin git@${_GIT_ORIGIN}
-  #     git remote -v
-  #     git tag $_GIT_TAG_VERSION_MAJOR_MINOR.$SHORT_SHA
-  #     git push --tag
-  #   volumes:
-  #   - name: 'ssh'
   #     path: /root/.ssh
 
 # Environment variables
