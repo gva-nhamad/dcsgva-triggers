@@ -31,21 +31,21 @@ steps:
     id: Terraform version
     args:
       - '-v'
-    dir: infra/terraform/
+    dir: ./
 
   - name: hashicorp/terraform
     id: Terraform init
     args:
       - 'init'
       - '-backend-config=bucket=${PROJECT_ID}-state'
-    dir: infra/terraform/
+    dir: ./
 
   - name: hashicorp/terraform
     id: Terraform plan
     args:
       - 'plan'
       - '-out=/workspace/tfplan'
-    dir: infra/terraform/
+    dir: ./
   
 # Environment variables
 options:
