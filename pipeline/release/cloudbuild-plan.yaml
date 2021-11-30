@@ -1,0 +1,107 @@
+---
+
+substitutions:
+  _LOCATION: 'europe-west2'
+  # _GIT_ORIGIN: 'github.com:gva-jshah/dcsgva-jinal-system.git'
+  _REPO_DIR: 'dcsgva-data-system'
+  # _GITHUB_KEYSTORE: dcsgva-lab-sandbox-jinal-prd-state
+
+steps:
+
+  - name: ubuntu
+    id: Build information
+    entrypoint: bash
+    args:
+      - '-c'
+      - |
+        echo \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*
+        echo BUILD DETAILS:
+        [ ! -z "${PROJECT_ID}" ]     && echo "Project ID:    ${PROJECT_ID}"
+        [ ! -z "${BUILD_ID}" ]       && echo "Build ID:      ${BUILD_ID}"
+        [ ! -z "${COMMIT_SHA}" ]     && echo "Commit SHA:    ${COMMIT_SHA}"
+        [ ! -z "${SHORT_SHA}" ]      && echo "Short SHA:     ${SHORT_SHA}"
+        [ ! -z "${REPO_NAME}" ]      && echo "Repo name:     ${REPO_NAME}"
+        [ ! -z "${BRANCH_NAME}" ]    && echo "Branch name:   ${BRANCH_NAME}"
+        [ ! -z "${TAG_NAME}" ]       && echo "Tag name:      ${TAG_NAME}"
+        [ ! -z "${REVISION_ID}" ]    && echo "Revision ID:   ${REVISION_ID}"
+        [ ! -z "${_HEAD_BRANCH}" ]   && echo "Head branch:   ${_HEAD_BRANCH}"
+        [ ! -z "${_BASE_BRANCH}" ]   && echo "Base branch:   ${_BASE_BRANCH}"
+        [ ! -z "${_HEAD_REPO_URL}" ] && echo "Head repo URL: ${_HEAD_REPO_URL}"
+        [ ! -z "${_PR_NUMBER}" ]     && echo "PR number:     ${_PR_NUMBER}"
+        echo \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*
+  # - name: gcr.io/cloud-builders/gsutil
+  #   id: Acquire keys
+  #   args: ['cp', 'gs://${_GITHUB_KEYSTORE}/git_id_rsa', 'git_id_rsa']
+
+  # Set up git with key and domain
+  # - name: 'gcr.io/cloud-builders/git'
+  #   entrypoint: 'bash'
+  #   id: Git Clone
+  #   args:
+  #   - '-c'
+  #   - |
+  #     mv git_id_rsa /root/.ssh/git_id_rsa
+  #     chmod 600 /root/.ssh/git_id_rsa
+  #     cat <<EOF >/root/.ssh/config
+  #     Hostname github.com
+  #     IdentityFile /root/.ssh/git_id_rsa
+  #     EOF
+  #     ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts
+  #     echo "git clone git@${_GIT_ORIGIN}"
+  #     git clone git@${_GIT_ORIGIN}
+  #     cd ${_REPO_DIR}
+  #     git checkout $BRANCH_NAME
+  #   volumes:
+  #   - name: 'ssh'
+  #     path: /root/.ssh
+
+#
+# Deploy code
+#
+
+  - name: hashicorp/terraform
+    id: Terraform version
+    args:
+      - '-v'
+    dir: infra/terraform/
+
+  - name: hashicorp/terraform
+    id: Terraform init
+    args:
+      - 'init'
+      - '-backend-config=bucket=${PROJECT_ID}-state'
+    dir: infra/terraform/
+
+  - name: hashicorp/terraform
+    id: Terraform plan
+    args:
+      - 'plan'
+      - '-var-file=tfvars/${PROJECT_ID}.tfvars'
+      - '-out=/workspace/tfplan'
+    dir: infra/terraform/
+
+  # - name: 'gcr.io/cloud-builders/git'
+  #   id: Tag Candidate Release Code
+  #   entrypoint: 'bash'
+  #   args:
+  #   - '-c'
+  #   - |
+  #     # version=$(cat version.txt)
+  #     # echo "version is:$version"
+  #     # cd ${_REPO_DIR}
+  #     git remote -v
+  #     git remote set-url origin git@${_GIT_ORIGIN}
+  #     git remote -v
+  #     git tag 1.0.$SHORT_SHA
+  #     git push --tag
+  #   volumes:
+  #   - name: 'ssh'
+  #     path: /root/.ssh
+
+# Environment variables
+options:
+  env:
+    - GOOGLE_PROJECT=${PROJECT_ID}
+    - GOOGLE_REGION=${_REGION}
+
+timeout: 1800s # 30min, overriding the default 10min build timeout
