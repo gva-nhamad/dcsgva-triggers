@@ -49,7 +49,7 @@ resource "google_cloudbuild_trigger" "tst-push-api_supporting_infra_apply" {
 
 # PLAN
 
-resource "google_cloudbuild_trigger" "tst-push-api_supporting_infra_plan" {
+resource "google_cloudbuild_trigger" "legba_plan" {
   provider = google-beta
   name = "Plan-dcsgva-legba-tst"
 
@@ -68,7 +68,7 @@ resource "google_cloudbuild_trigger" "tst-push-api_supporting_infra_plan" {
 
 # APPLY
 
-resource "google_cloudbuild_trigger" "tst-legba_supporting_infra_apply" {
+resource "google_cloudbuild_trigger" "legba_infra_apply" {
   provider = google-beta
   name = "Apply-dcsgva-legba-tst"
 
