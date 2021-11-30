@@ -44,7 +44,6 @@ steps:
     id: Terraform plan
     args:
       - 'plan'
-      - '-var-file=tfvars/${PROJECT_ID}.tfvars'
       - '-out=/workspace/tfplan'
     dir: infra/terraform/
   
