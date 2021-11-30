@@ -33,45 +33,45 @@ steps:
         [ ! -z "${_PR_NUMBER}" ]     && echo "PR number:     ${_PR_NUMBER}"
         echo \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*
 
-  #
-  # Prepare environment
-  #
-  - name: gcr.io/cloud-builders/gsutil
-    id: Acquire keys
-    args: ['cp', 'gs://${_GITHUB_KEYSTORE}/github_id_rsa.enc', 'github_id_rsa.enc']
+  # #
+  # # Prepare environment
+  # #
+  # - name: gcr.io/cloud-builders/gsutil
+  #   id: Acquire keys
+  #   args: ['cp', 'gs://${_GITHUB_KEYSTORE}/github_id_rsa.enc', 'github_id_rsa.enc']
 
-  # Decrypt the file containing the key
-  - name: 'gcr.io/cloud-builders/gcloud'
-    id: Prepare keys
-    args:
-    - kms
-    - decrypt
-    - --project=${_GITHUB_KMS_KEY_PROJECT}
-    - --ciphertext-file=github_id_rsa.enc
-    - --plaintext-file=/root/.ssh/id_rsa
-    - --location=${_LOCATION}
-    - --keyring=${_GITHUB_KMS_KEY_RING_NAME}
-    - --key=${_GITHUB_KMS_KEY_NAME}
-    volumes:
-    - name: 'ssh'
-      path: /root/.ssh
+  # # Decrypt the file containing the key
+  # - name: 'gcr.io/cloud-builders/gcloud'
+  #   id: Prepare keys
+  #   args:
+  #   - kms
+  #   - decrypt
+  #   - --project=${_GITHUB_KMS_KEY_PROJECT}
+  #   - --ciphertext-file=github_id_rsa.enc
+  #   - --plaintext-file=/root/.ssh/id_rsa
+  #   - --location=${_LOCATION}
+  #   - --keyring=${_GITHUB_KMS_KEY_RING_NAME}
+  #   - --key=${_GITHUB_KMS_KEY_NAME}
+  #   volumes:
+  #   - name: 'ssh'
+  #     path: /root/.ssh
 
-  # Set up git with key and domain
-  - name: 'gcr.io/cloud-builders/git'
-    entrypoint: 'bash'
-    id: Git Clone
-    args:
-    - '-c'
-    - |
-      chmod 600 /root/.ssh/id_rsa
-      cat <<EOF >/root/.ssh/config
-      Hostname github.com
-      IdentityFile /root/.ssh/id_rsa
-      EOF
-      ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts
-    volumes:
-    - name: 'ssh'
-      path: /root/.ssh
+  # # Set up git with key and domain
+  # - name: 'gcr.io/cloud-builders/git'
+  #   entrypoint: 'bash'
+  #   id: Git Clone
+  #   args:
+  #   - '-c'
+  #   - |
+  #     chmod 600 /root/.ssh/id_rsa
+  #     cat <<EOF >/root/.ssh/config
+  #     Hostname github.com
+  #     IdentityFile /root/.ssh/id_rsa
+  #     EOF
+  #     ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts
+  #   volumes:
+  #   - name: 'ssh'
+  #     path: /root/.ssh
 
 #
 # Deploy code
@@ -81,14 +81,14 @@ steps:
     id: Terraform version
     args:
       - '-v'
-    dir: infra/terraform/
+    dir: ./
 
   - name: hashicorp/terraform
     id: Terraform init
     args:
       - 'init'
       - '-backend-config=bucket=${PROJECT_ID}-state'
-    dir: infra/terraform/
+    dir: ./
 
   - name: hashicorp/terraform
     id: Terraform plan
@@ -96,7 +96,7 @@ steps:
       - 'plan'
       - '-var-file=tfvars/${PROJECT_ID}.tfvars'
       - '-out=/workspace/tfplan'
-    dir: infra/terraform/
+    dir: ./
 
   - name: hashicorp/terraform
     id: Terraform apply
@@ -104,7 +104,7 @@ steps:
       - 'apply'
       - '-auto-approve'
       - '/workspace/tfplan'
-    dir: infra/terraform/
+    dir: ./
 
   ###################
   ### Creating Tags
